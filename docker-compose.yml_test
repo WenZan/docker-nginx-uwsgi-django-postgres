@@ -1,0 +1,59 @@
+# airship web server postgres->django-uwsgi->nginx
+# this docker-compose.yml_test is for debugging
+# refreshed 2017-11-30
+ 
+version: '3'
+
+services:
+  db:
+    container_name: db
+    image: postgres
+    #restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+  
+  adminer:
+    container_name: adminer
+    image: adminer
+    #restart: always
+    depends_on:
+      - db
+    ports:
+     - 8080:8080
+
+  app:
+    container_name: django-uwsgi
+    build: ./code/django-uwsgi
+    image: django-uwsgi:test
+    #restart: always
+    depends_on: 
+      - db
+    volumes:
+      - "./code/django-uwsgi/uwsgi.ini:/etc/uwsgi.ini"
+      - "./code/django-uwsgi/app:/app"
+    ports:
+      - 8001:8001
+      #- 9191:9191
+
+  nginx:
+    container_name: nginx
+    build: ./code/nginx
+    image: nginx:test
+    depends_on:
+      - app
+    #restart: always
+    links: 
+      - app
+    ports:
+      - 8000:80
+    volumes:
+      - "./code/nginx/my_nginx.conf:/etc/nginx/conf.d/my_nginx.conf"
+      - "./code/nginx/nginx.conf:/etc/nginx/nginx.conf"
+      - "./log:/var/log/nginx"
+      - "./code/django-uwsgi/app:/app"
+
+volumes:
+  #data:
+  pgdata: 
