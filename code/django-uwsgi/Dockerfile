@@ -15,7 +15,7 @@ RUN apt-get update \
         && rm -fr /var/tmp/*
 
 # Set up package and requirements
-RUN pip install django uwsgi whitenoise
+RUN pip install "django<2" uwsgi whitenoise
 RUN	mkdir /data
 WORKDIR /data
 COPY requirements.txt /data
